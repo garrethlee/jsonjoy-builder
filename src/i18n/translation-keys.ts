@@ -783,4 +783,47 @@ export interface Translation {
    * > Value must be positive.
    */
   readonly typeValidationErrorPositive: string;
+
+  /**
+   * The translation for the key `defaultValueLabel`. English default is:
+   *
+   * > Default Value
+   */
+  readonly defaultValueLabel: string;
+  /**
+   * The translation for the key `defaultValuePlaceholderString`. English default is:
+   *
+   * > Enter default text value...
+   */
+  readonly defaultValuePlaceholderString: string;
+  /**
+   * The translation for the key `defaultValuePlaceholderNumber`. English default is:
+   *
+   * > Enter default number...
+   */
+  readonly defaultValuePlaceholderNumber: string;
+  /**
+   * The translation for the key `defaultValuePlaceholderArray`. English default is:
+   *
+   * > Enter JSON array, e.g. ["item1", "item2"]...
+   */
+  readonly defaultValuePlaceholderArray: string;
+  /**
+   * The translation for the key `defaultValueNone`. English default is:
+   *
+   * > None
+   */
+  readonly defaultValueNone: string;
+  /**
+   * The translation for the key `defaultValueTrue`. English default is:
+   *
+   * > True
+   */
+  readonly defaultValueTrue: string;
+  /**
+   * The translation for the key `defaultValueFalse`. English default is:
+   *
+   * > False
+   */
+  readonly defaultValueFalse: string;
 }

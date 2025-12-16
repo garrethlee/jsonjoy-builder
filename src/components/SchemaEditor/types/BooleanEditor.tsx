@@ -1,9 +1,19 @@
 import { useId } from "react";
 import { Label } from "../../../components/ui/label.tsx";
 import { Switch } from "../../../components/ui/switch.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select.tsx";
 import { useTranslation } from "../../../hooks/use-translation.ts";
 import type { ObjectJSONSchema } from "../../../types/jsonSchema.ts";
-import { withObjectSchema } from "../../../types/jsonSchema.ts";
+import {
+  isBooleanSchema,
+  withObjectSchema,
+} from "../../../types/jsonSchema.ts";
 import type { TypeEditorProps } from "../TypeEditor.tsx";
 
 const BooleanEditor: React.FC<TypeEditorProps> = ({
@@ -20,6 +30,11 @@ const BooleanEditor: React.FC<TypeEditorProps> = ({
     schema,
     (s) => s.enum as boolean[] | undefined,
     null,
+  );
+  const defaultValue = withObjectSchema(
+    schema,
+    (s) => s.default as boolean | undefined,
+    undefined,
   );
 
   // Determine if we have enum restrictions
@@ -79,8 +94,61 @@ const BooleanEditor: React.FC<TypeEditorProps> = ({
 
   const hasEnum = enumValues && enumValues.length > 0;
 
+  // Handle default value change
+  const handleDefaultChange = (value: string) => {
+    const baseSchema = isBooleanSchema(schema)
+      ? { type: "boolean" as const }
+      : { ...schema };
+
+    const { type: _, description: __, ...rest } = baseSchema;
+
+    const updatedSchema: ObjectJSONSchema = {
+      ...rest,
+      type: "boolean",
+    };
+
+    if (value === "true") {
+      updatedSchema.default = true;
+    } else if (value === "false") {
+      updatedSchema.default = false;
+    } else {
+      // Remove default if "none"
+      const { default: _, ...withoutDefault } = updatedSchema;
+      onChange(withoutDefault as ObjectJSONSchema);
+      return;
+    }
+
+    onChange(updatedSchema);
+  };
+
+  const defaultValueId = useId();
+  const defaultValueDisplay =
+    defaultValue === true ? "true" : defaultValue === false ? "false" : "none";
+
   return (
     <div className="space-y-4">
+      {(!readOnly || defaultValue !== undefined) && (
+        <div className="space-y-2 pb-2 border-b border-border/40">
+          <Label htmlFor={defaultValueId} className="text-foreground">
+            {t.defaultValueLabel}
+          </Label>
+          <Select
+            value={defaultValueDisplay}
+            onValueChange={handleDefaultChange}
+            disabled={readOnly}
+          >
+            <SelectTrigger id={defaultValueId} className="h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">{t.defaultValueNone}</SelectItem>
+              <SelectItem value="true">{t.defaultValueTrue}</SelectItem>
+              <SelectItem value="false">{t.defaultValueFalse}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {readOnly && !hasEnum && (
         <p className="text-sm text-muted-foreground italic">
           {t.booleanNoConstraint}

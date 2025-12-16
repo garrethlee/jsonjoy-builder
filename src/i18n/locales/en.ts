@@ -152,4 +152,12 @@ export const en: Translation = {
   typeValidationErrorNegativeLength: "Length values cannot be negative.",
   typeValidationErrorIntValue: "Value must be an integer.",
   typeValidationErrorPositive: "Value must be positive.",
+
+  defaultValueLabel: "Default Value",
+  defaultValuePlaceholderString: "Enter default text value...",
+  defaultValuePlaceholderNumber: "Enter default number...",
+  defaultValuePlaceholderArray: "Enter JSON array, e.g. [\"item1\", \"item2\"]...",
+  defaultValueNone: "None",
+  defaultValueTrue: "True",
+  defaultValueFalse: "False",
 };

@@ -1,10 +1,10 @@
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { Input } from "../../../components/ui/input.tsx";
 import { Label } from "../../../components/ui/label.tsx";
 import { Switch } from "../../../components/ui/switch.tsx";
 import { useTranslation } from "../../../hooks/use-translation.ts";
-import { getArrayItemsSchema } from "../../../lib/schemaEditor.ts";
 import { cn } from "../../../lib/utils.ts";
+import { getArrayItemsSchema } from "../../../lib/schemaEditor.ts";
 import type {
   ObjectJSONSchema,
   SchemaType,
@@ -34,10 +34,27 @@ const ArrayEditor: React.FC<TypeEditorProps> = ({
   const [uniqueItems, setUniqueItems] = useState<boolean>(
     withObjectSchema(schema, (s) => s.uniqueItems || false, false),
   );
+  const defaultValue = withObjectSchema(
+    schema,
+    (s) => s.default as unknown[] | undefined,
+    undefined,
+  );
+  const [defaultValueText, setDefaultValueText] = useState<string>(
+    defaultValue !== undefined ? JSON.stringify(defaultValue) : "",
+  );
+
+  // Sync defaultValueText when schema changes externally
+  useEffect(() => {
+    const currentDefault = defaultValue !== undefined
+      ? JSON.stringify(defaultValue)
+      : "";
+    setDefaultValueText(currentDefault);
+  }, [defaultValue]);
 
   const minItemsId = useId();
   const maxItemsId = useId();
   const uniqueItemsId = useId();
+  const defaultValueId = useId();
 
   // Get the array's item schema
   const itemsSchema = getArrayItemsSchema(schema) || { type: "string" };
@@ -86,6 +103,43 @@ const ArrayEditor: React.FC<TypeEditorProps> = ({
     onChange(updatedSchema);
   };
 
+  // Handle default value change
+  const handleDefaultChange = (value: string) => {
+    setDefaultValueText(value);
+
+    const validationProps: ObjectJSONSchema = {
+      type: "array",
+      ...(isBooleanSchema(schema) ? {} : schema),
+    };
+
+    // Keep the items schema
+    if (validationProps.items === undefined && itemsSchema) {
+      validationProps.items = itemsSchema;
+    }
+
+    // Keep other validation properties
+    if (minItems !== undefined) validationProps.minItems = minItems;
+    if (maxItems !== undefined) validationProps.maxItems = maxItems;
+    if (uniqueItems) validationProps.uniqueItems = uniqueItems;
+
+    if (value.trim() === "") {
+      // Remove default if empty
+      const { default: _, ...withoutDefault } = validationProps;
+      onChange(withoutDefault as ObjectJSONSchema);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) {
+        validationProps.default = parsed;
+        onChange(validationProps);
+      }
+    } catch {
+      // Invalid JSON, don't update schema
+    }
+  };
+
   const minMaxError = useMemo(
     () =>
       validationNode?.validation.errors?.find((err) => err.path[0] === "minmax")
@@ -111,6 +165,45 @@ const ArrayEditor: React.FC<TypeEditorProps> = ({
 
   return (
     <div className="space-y-6">
+      {(!readOnly || defaultValue !== undefined) && (
+        <div className="space-y-2 pb-2 border-b border-border/40">
+          <Label htmlFor={defaultValueId} className="text-foreground">
+            {t.defaultValueLabel}
+          </Label>
+          <textarea
+            id={defaultValueId}
+            value={defaultValueText}
+            onChange={(e) => handleDefaultChange(e.target.value)}
+            onBlur={() => {
+              // Validate on blur
+              if (defaultValueText.trim() !== "") {
+                try {
+                  const parsed = JSON.parse(defaultValueText);
+                  if (!Array.isArray(parsed)) {
+                    setDefaultValueText(
+                      defaultValue !== undefined
+                        ? JSON.stringify(defaultValue)
+                        : "",
+                    );
+                  }
+                } catch {
+                  setDefaultValueText(
+                    defaultValue !== undefined
+                      ? JSON.stringify(defaultValue)
+                      : "",
+                  );
+                }
+              }
+            }}
+            placeholder={t.defaultValuePlaceholderArray}
+            disabled={readOnly}
+            className={cn(
+              "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+            )}
+          />
+        </div>
+      )}
+
       {/* Array validation settings */}
       {(!readOnly || !!maxItems || !!minItems) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

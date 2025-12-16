@@ -155,4 +155,12 @@ export const es: Translation = {
     "Los valores de longitud no pueden ser negativos.",
   typeValidationErrorIntValue: "El valor debe ser un entero.",
   typeValidationErrorPositive: "El valor debe ser positivo.",
+
+  defaultValueLabel: "Valor por Defecto",
+  defaultValuePlaceholderString: "Ingrese valor de texto por defecto...",
+  defaultValuePlaceholderNumber: "Ingrese número por defecto...",
+  defaultValuePlaceholderArray: "Ingrese array JSON, ej. [\"item1\", \"item2\"]...",
+  defaultValueNone: "Ninguno",
+  defaultValueTrue: "Verdadero",
+  defaultValueFalse: "Falso",
 };

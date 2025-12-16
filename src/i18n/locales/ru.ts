@@ -157,4 +157,12 @@ export const ru: Translation = {
     "Значения длины не могут быть отрицательными.",
   typeValidationErrorIntValue: "Значение должно быть целым числом.",
   typeValidationErrorPositive: "Значение должно быть положительным.",
+
+  defaultValueLabel: "Значение по умолчанию",
+  defaultValuePlaceholderString: "Введите значение текста по умолчанию...",
+  defaultValuePlaceholderNumber: "Введите число по умолчанию...",
+  defaultValuePlaceholderArray: "Введите JSON массив, напр. [\"item1\", \"item2\"]...",
+  defaultValueNone: "Нет",
+  defaultValueTrue: "Истина",
+  defaultValueFalse: "Ложь",
 };

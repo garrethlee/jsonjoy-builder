@@ -155,4 +155,12 @@ export const de: Translation = {
   typeValidationErrorNegativeLength: "Längenwerte dürfen nicht negativ sein.",
   typeValidationErrorIntValue: "Der Wert muss eine ganze Zahl sein.",
   typeValidationErrorPositive: "Der Wert muss positiv sein.",
+
+  defaultValueLabel: "Standardwert",
+  defaultValuePlaceholderString: "Standardtextwert eingeben...",
+  defaultValuePlaceholderNumber: "Standardzahl eingeben...",
+  defaultValuePlaceholderArray: "JSON-Array eingeben, z.B. [\"item1\", \"item2\"]...",
+  defaultValueNone: "Keiner",
+  defaultValueTrue: "Wahr",
+  defaultValueFalse: "Falsch",
 };

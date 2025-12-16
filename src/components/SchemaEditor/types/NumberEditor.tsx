@@ -58,6 +58,11 @@ const NumberEditor: React.FC<NumberEditorProps> = ({
     (s) => (s.enum as number[]) || [],
     [],
   );
+  const defaultValue = withObjectSchema(
+    schema,
+    (s) => s.default as number | undefined,
+    undefined,
+  );
 
   // Handle validation change
   const handleValidationChange = (property: Property, value: unknown) => {
@@ -216,10 +221,67 @@ const NumberEditor: React.FC<NumberEditorProps> = ({
     !!exclusiveMinimum ||
     !!exclusiveMaximum ||
     !!multipleOf ||
-    enumValues.length > 0;
+    enumValues.length > 0 ||
+    defaultValue !== undefined;
+
+  // Handle default value change
+  const handleDefaultChange = (value: number | undefined) => {
+    const baseProperties: Partial<ObjectJSONSchema> = {
+      type: integer ? "integer" : "number",
+    };
+
+    // Copy existing properties if schema is an object
+    if (!isBooleanSchema(schema)) {
+      if (schema.minimum !== undefined) baseProperties.minimum = schema.minimum;
+      if (schema.maximum !== undefined) baseProperties.maximum = schema.maximum;
+      if (schema.exclusiveMinimum !== undefined)
+        baseProperties.exclusiveMinimum = schema.exclusiveMinimum;
+      if (schema.exclusiveMaximum !== undefined)
+        baseProperties.exclusiveMaximum = schema.exclusiveMaximum;
+      if (schema.multipleOf !== undefined)
+        baseProperties.multipleOf = schema.multipleOf;
+      if (schema.enum !== undefined) baseProperties.enum = schema.enum;
+    }
+
+    if (value !== undefined) {
+      baseProperties.default = value;
+    } else {
+      // Remove default property
+      const { default: _, ...rest } = baseProperties;
+      onChange(rest as ObjectJSONSchema);
+      return;
+    }
+
+    onChange(baseProperties as ObjectJSONSchema);
+  };
+
+  const defaultValueId = useId();
 
   return (
     <div className="space-y-4">
+      {(!readOnly || defaultValue !== undefined) && (
+        <div className="space-y-2 pb-2 border-b border-border/40">
+          <Label htmlFor={defaultValueId} className="text-foreground">
+            {t.defaultValueLabel}
+          </Label>
+          <Input
+            id={defaultValueId}
+            type="number"
+            value={defaultValue !== undefined ? defaultValue : ""}
+            onChange={(e) => {
+              const value = e.target.value
+                ? Number(e.target.value)
+                : undefined;
+              handleDefaultChange(value);
+            }}
+            placeholder={t.defaultValuePlaceholderNumber}
+            className="h-8 text-foreground"
+            disabled={readOnly}
+            step={integer ? 1 : "any"}
+          />
+        </div>
+      )}
+
       {readOnly && !hasConstraint && (
         <p className="text-sm text-muted-foreground italic">
           {t.numberNoConstraint}

@@ -66,6 +66,31 @@ const StringEditor: React.FC<TypeEditorProps> = ({
     onChange(updatedValidation);
   };
 
+  // Handle default value change
+  const handleDefaultChange = (value: string | undefined) => {
+    const baseSchema = isBooleanSchema(schema)
+      ? { type: "string" as const }
+      : { ...schema };
+
+    const { type: _, description: __, ...rest } = baseSchema;
+
+    const updatedSchema: ObjectJSONSchema = {
+      ...rest,
+      type: "string",
+    };
+
+    if (value !== undefined && value !== "") {
+      updatedSchema.default = value;
+    } else {
+      // Remove default if empty
+      const { default: _, ...withoutDefault } = updatedSchema;
+      onChange(withoutDefault as ObjectJSONSchema);
+      return;
+    }
+
+    onChange(updatedSchema);
+  };
+
   // Handle adding enum value
   const handleAddEnumValue = () => {
     if (!enumValue.trim()) return;
@@ -142,16 +167,40 @@ const StringEditor: React.FC<TypeEditorProps> = ({
   const maxLengthValue = maxLength ?? "";
   const patternValue = pattern ?? "";
   const formatValue = format || "none";
+  const defaultValue = withObjectSchema(schema, (s) => s.default as string | undefined, undefined);
   const needsDetail =
     !readOnly ||
     minLengthValue !== "" ||
     maxLengthValue !== "" ||
     patternValue !== "" ||
     formatValue !== "none" ||
-    enumValues.length > 0;
+    enumValues.length > 0 ||
+    defaultValue !== undefined;
+
+  const defaultValueId = useId();
 
   return (
     <div className="space-y-4">
+      {(!readOnly || defaultValue !== undefined) && (
+        <div className="space-y-2 pb-2 border-b border-border/40">
+          <Label htmlFor={defaultValueId} className="text-foreground">
+            {t.defaultValueLabel}
+          </Label>
+          <Input
+            id={defaultValueId}
+            type="text"
+            value={defaultValue ?? ""}
+            onChange={(e) => {
+              const value = e.target.value || undefined;
+              handleDefaultChange(value);
+            }}
+            placeholder={t.defaultValuePlaceholderString}
+            className="h-8 text-foreground"
+            disabled={readOnly}
+          />
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
         {readOnly && !needsDetail && (
           <p className="text-sm text-muted-foreground italic">
